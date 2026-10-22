@@ -1,78 +1,51 @@
-# React + TypeScript + Vite
+# ClassTrack Web Frontend (`classtrack.web`)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma frontend moderna para la gestión académica multi-colegio, horarios y control de asistencia con reglas de negocio avanzadas (ventana de 72 horas para docentes, multi-tenancy por esquemas y notificaciones automatizadas).
 
-Currently, two official plugins are available:
+## 🚀 Tecnologías Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Framework:** React 19 + TypeScript
+- **Bundler:** Vite 8 con compilador React optimizado
+- **Estilos:** Tailwind CSS v4
+- **Enrutamiento:** React Router DOM
+- **Cliente HTTP:** Axios centralizado con interceptores Bearer JWT
 
-## React Compiler
+---
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## 🏛️ Arquitectura del Proyecto
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+Este proyecto sigue una **Arquitectura Modular Guiada por Features (Feature-Driven / Vertical Slicing)**. Cada funcionalidad de negocio está completamente aislada y contiene sus propios componentes, hooks, interfaces y servicios.
 
-## Expanding the ESLint configuration
+👉 **Consulta la especificación arquitectónica detallada en [ARCHITECTURE.md](./ARCHITECTURE.md).**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Resumen de la Estructura por Feature:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Cada módulo en `src/features/[feature-name]/` se estructura estrictamente así:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```text
+src/features/[feature]/
+├── components/    # Componentes visuales privados del feature
+├── hooks/         # Custom hooks con estado y lógica de negocio
+├── interfaces/    # Contratos TypeScript (DTOs, modelos, props)
+├── services/      # Llamadas a endpoints de la API (classtrack.api)
+├── pages/         # Vistas de la página para el enrutador
+└── index.ts       # Entrada pública del feature
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🛠️ Comandos de Desarrollo
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Instalar dependencias
+npm install
 
+# Iniciar servidor de desarrollo
+npm run dev
+
+# Compilar para producción (TypeScript + Vite)
+npm run build
+
+# Ejecutar linter
+npm run lint
 ```

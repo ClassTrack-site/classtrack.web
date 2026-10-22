@@ -1,1 +1,162 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+  --color-ios-bg: #F2F2F7;
+  --color-ios-card: #FFFFFF;
+  --color-ios-border: rgba(0, 0, 0, 0.06);
+  --color-primary-500: #0EA5E9;
+  --color-primary-600: #0284C7;
+  --color-primary-100: #E0F2FE;
+  --color-status-present: #16A34A;
+  --color-status-late: #D97706;
+  --color-status-absent: #DC2626;
+  --color-status-excused: #2563EB;
+}
+
+/* Escala general de UI (sensación de zoom ~150% más cercana, táctil y legible) */
+html {
+  font-size: 18.5px;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 19.5px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 20px;
+  }
+}
+
+/* Curvas de aceleración tipo Apple iOS (Spring & Fluid Motion) */
+:root {
+  --ease-ios: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ios-bounce: cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+/* Animaciones Fluidas */
+@keyframes iosFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes iosSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes iosSheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes iosDialogPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes iosStatusPulse {
+  0% {
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Clases de Utilidad de Animación */
+@layer utilities {
+  .animate-ios-fade {
+    animation: iosFadeIn 0.28s var(--ease-ios) forwards;
+  }
+
+  .animate-ios-slide {
+    animation: iosSlideUp 0.38s var(--ease-ios) forwards;
+  }
+
+  .animate-ios-sheet {
+    animation: iosSheetUp 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-ios-dialog {
+    animation: iosDialogPop 0.32s var(--ease-ios) forwards;
+  }
+
+  .animate-ios-pulse {
+    animation: iosStatusPulse 0.25s var(--ease-ios-bounce) forwards;
+  }
+
+  .ios-glass {
+    background-color: rgba(255, 255, 255, 0.84);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  
+  .ios-glass-dark {
+    background-color: rgba(23, 23, 23, 0.84);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .ios-tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Efecto de elevación suave en tarjetas */
+  .ios-hover-card {
+    transition: transform 0.25s var(--ease-ios), box-shadow 0.25s var(--ease-ios);
+  }
+  .ios-hover-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -4px rgba(14, 165, 233, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
+  }
+
+  /* Microinteracción táctil tipo háptica */
+  .ios-press {
+    transition: transform 0.15s var(--ease-ios), opacity 0.15s ease;
+  }
+  .ios-press:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Transiciones globales suaves para interactividad */
+button, [role="button"], a {
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s var(--ease-ios);
+}
