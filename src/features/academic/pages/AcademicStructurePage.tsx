@@ -1,9 +1,48 @@
-import React, { useState } from 'react';
-import { Badge, Button, InsetGroup, InsetItem, SegmentedControl } from '@/shared/components/ui';
-import { BookOpen, School, Building, Calendar, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Badge, Button, InsetGroup, InsetItem, SegmentedControl, Card } from '@/shared/components/ui';
+import { BookOpen, School, Building, Calendar, Plus, Loader2 } from 'lucide-react';
+import { academicService } from '../services/academic.service';
+import type {
+  AcademicGroup,
+  SubjectItem,
+  ClassroomItem,
+  CalendarEventItem,
+} from '../interfaces/academic.types';
 
 export const AcademicStructurePage: React.FC = () => {
   const [tab, setTab] = useState<'groups' | 'subjects' | 'classrooms' | 'calendar'>('groups');
+  const [groups, setGroups] = useState<AcademicGroup[]>([]);
+  const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+  const [classrooms, setClassrooms] = useState<ClassroomItem[]>([]);
+  const [calendar, setCalendar] = useState<CalendarEventItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadAcademicData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const [grp, sub, cls, cal] = await Promise.all([
+          academicService.getGroups().catch(() => []),
+          academicService.getSubjects().catch(() => []),
+          academicService.getClassrooms().catch(() => []),
+          academicService.getCalendar().catch(() => []),
+        ]);
+        setGroups(grp);
+        setSubjects(sub);
+        setClassrooms(cls);
+        setCalendar(cal);
+      } catch (err: any) {
+        console.error('Error al cargar estructura académica:', err);
+        setError('No fue posible cargar los datos académicos del colegio.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAcademicData();
+  }, []);
 
   return (
     <div className="space-y-5 max-w-2xl md:max-w-5xl mx-auto pb-12">
@@ -19,58 +58,102 @@ export const AcademicStructurePage: React.FC = () => {
 
       <SegmentedControl
         options={[
-          { value: 'groups', label: 'Grupos' },
-          { value: 'subjects', label: 'Materias' },
-          { value: 'classrooms', label: 'Aulas' },
-          { value: 'calendar', label: 'Calendario' },
+          { value: 'groups', label: `Grupos (${groups.length})` },
+          { value: 'subjects', label: `Materias (${subjects.length})` },
+          { value: 'classrooms', label: `Aulas (${classrooms.length})` },
+          { value: 'calendar', label: `Calendario (${calendar.length})` },
         ]}
         value={tab}
         onChange={(val) => setTab(val as any)}
       />
 
-      {tab === 'groups' && (
-        <InsetGroup title="Grupos Académicos (Ciclo 2026)">
-          <InsetItem
-            title="Grado 9-A"
-            subtitle="Director: Prof. Carlos Rector • 10 Estudiantes matriculados"
-            icon={<School className="h-4 w-4" />}
-            trailing={<Badge variant="present">Activo</Badge>}
-          />
-        </InsetGroup>
-      )}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center min-h-[250px] gap-2">
+          <Loader2 className="h-8 w-8 text-[#0EA5E9] animate-spin" />
+          <p className="text-xs text-slate-500 font-medium">Cargando catálogo institucional...</p>
+        </div>
+      ) : error ? (
+        <Card className="p-6 text-center space-y-2">
+          <p className="text-sm text-rose-600 font-medium">{error}</p>
+          <Button size="sm" variant="secondary" onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </Card>
+      ) : (
+        <>
+          {tab === 'groups' && (
+            <InsetGroup title="Grupos Académicos Registrados">
+              {groups.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500">No hay grupos creados todavía.</div>
+              ) : (
+                groups.map((g) => (
+                  <InsetItem
+                    key={g.id}
+                    title={g.name}
+                    subtitle={`Director: ${g.directorFirstName ? `${g.directorFirstName} ${g.directorLastName}` : 'Sin asignar'} • ${g.studentCount} Estudiantes matriculados`}
+                    icon={<School className="h-4 w-4" />}
+                    trailing={<Badge variant="present">Año {g.schoolYear}</Badge>}
+                  />
+                ))
+              )}
+            </InsetGroup>
+          )}
 
-      {tab === 'subjects' && (
-        <InsetGroup title="Catálogo de Asignaturas">
-          <InsetItem title="Matemáticas" subtitle="Código: MAT-01" icon={<BookOpen className="h-4 w-4" />} />
-          <InsetItem title="Ciencias Naturales" subtitle="Código: CN-01" icon={<BookOpen className="h-4 w-4" />} />
-          <InsetItem title="Lengua Castellana" subtitle="Código: ESP-01" icon={<BookOpen className="h-4 w-4" />} />
-          <InsetItem title="Inglés" subtitle="Código: ENG-01" icon={<BookOpen className="h-4 w-4" />} />
-        </InsetGroup>
-      )}
+          {tab === 'subjects' && (
+            <InsetGroup title="Catálogo de Asignaturas">
+              {subjects.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500">No hay materias registradas.</div>
+              ) : (
+                subjects.map((s) => (
+                  <InsetItem
+                    key={s.id}
+                    title={s.name}
+                    subtitle={`Código: ${s.code}${s.description ? ` • ${s.description}` : ''}`}
+                    icon={<BookOpen className="h-4 w-4" />}
+                    trailing={<Badge variant={s.isActive ? 'present' : 'neutral'}>{s.isActive ? 'Activa' : 'Inactiva'}</Badge>}
+                  />
+                ))
+              )}
+            </InsetGroup>
+          )}
 
-      {tab === 'classrooms' && (
-        <InsetGroup title="Espacios Físicos">
-          <InsetItem title="Aula 101" subtitle="Capacidad: 35 estudiantes • Bloque A" icon={<Building className="h-4 w-4" />} />
-          <InsetItem title="Aula 102" subtitle="Capacidad: 35 estudiantes • Bloque A" icon={<Building className="h-4 w-4" />} />
-          <InsetItem title="LAB-01 (Laboratorio)" subtitle="Capacidad: 30 estudiantes • Sistemas" icon={<Building className="h-4 w-4" />} />
-        </InsetGroup>
-      )}
+          {tab === 'classrooms' && (
+            <InsetGroup title="Espacios Físicos y Aulas">
+              {classrooms.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500">No hay aulas registradas.</div>
+              ) : (
+                classrooms.map((c) => (
+                  <InsetItem
+                    key={c.id}
+                    title={c.name}
+                    subtitle={`Capacidad: ${c.capacity} alumnos • Código: ${c.code}${c.location ? ` • ${c.location}` : ''}`}
+                    icon={<Building className="h-4 w-4" />}
+                    trailing={<Badge variant={c.isActive ? 'present' : 'neutral'}>{c.isActive ? 'Disponible' : 'Inactiva'}</Badge>}
+                  />
+                ))
+              )}
+            </InsetGroup>
+          )}
 
-      {tab === 'calendar' && (
-        <InsetGroup title="Eventos del Calendario Escolar">
-          <InsetItem
-            title="Primer Periodo Lectivo 2026"
-            subtitle="01 Feb 2026 - 15 Abr 2026 • Periodo Académico"
-            icon={<Calendar className="h-4 w-4" />}
-            trailing={<Badge variant="sky">Vigente</Badge>}
-          />
-          <InsetItem
-            title="Semana Santa"
-            subtitle="29 Mar 2026 - 05 Abr 2026 • Vacaciones (No lectivo)"
-            icon={<Calendar className="h-4 w-4" />}
-            trailing={<Badge variant="warning">Receso</Badge>}
-          />
-        </InsetGroup>
+          {tab === 'calendar' && (
+            <InsetGroup title="Eventos del Calendario Escolar">
+              {calendar.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500">
+                  No hay eventos especiales programados. Todos los días regulares siguen el horario base.
+                </div>
+              ) : (
+                calendar.map((ev) => (
+                  <InsetItem
+                    key={ev.id}
+                    title={ev.name}
+                    subtitle={`Fecha: ${ev.date} • Tipo: ${ev.type}`}
+                    icon={<Calendar className="h-4 w-4" />}
+                  />
+                ))
+              )}
+            </InsetGroup>
+          )}
+        </>
       )}
     </div>
   );
